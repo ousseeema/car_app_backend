@@ -105,5 +105,41 @@ exports.login = asynchanddler(async(req, res , next )=>{
     message :"token is here",
     token : token
   });
+});
+
+
+exports.resetpassword = asynchanddler(async (req, res, next )=>{
+  const { email } = req.body;
+
+
+
+  let user = await usermodel.findOne({email:email});
+
+
+  if (!user)
+{
+  return res.status(404).send({
+    success : false, 
+    message:'no such user found ',
+    data:[]
+  })
+}
+
+
+
+  try {
+    const resetToken =  await user.resetToken();
+    await user.save({validateBeforeSave:false});
+    
+    
+  } catch (err) {
+
+    
+  }
+
+
+
+
+
 })
 
