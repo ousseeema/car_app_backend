@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const jwt = require("jsonwebtoken");
+const Jwt = require("jsonwebtoken");
 const crypto = require('crypto');
 const user = mongoose.Schema({
 
@@ -57,36 +57,32 @@ const user = mongoose.Schema({
    resetToken : String ,
    dateResetToken : Date , 
 });
-user.methodes.jwt =async function(){
-  
-  const token = await  jwt.sign(
-    {
-      "id": this._id, 
-    }, 
-    "sioussema", 
-  );
-  return token;
+user.methods.sign = function(){
+  return Jwt.sign({id: this._id} ,"sioussema", {expiresIn:"30d"})
+ }
 
-}
-
-user.methodes.compare = async function(password){
+user.methods.compare = async function(password){
  
   return await bcrypt.compare(password , this.password);
   
 }
-user.pre("save", function () {
+user.pre("save", function (next) {
+  if(!this.isModified("password")){
+    next();
+  }
  const  sltgen = bcrypt.genSalt(20);
  const hashpass = bcrypt.hash(this.password, sltgen
   );
   this.password = hashpass; 
 }) ;
 
-user.methodes.resetToken =async function(){
+user.methods.resettoken =async function(){
   const resetToken1 = await crypto.randomBytes(20).toString("hex");
   this.resetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
   this.dateResetToken = Date.now() + 10 * (60 * 1000);
   return resetToken1;
 }
+
 
 
 

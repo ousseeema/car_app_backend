@@ -2,7 +2,7 @@ const asynchanddler = require("../middleware/asynchandler");
 const usermodel = require("../model/user");
 
 const emailTrapper= require("../utils/emailTraper")
-
+const crypto =require('crypto')
 
 
 // ?   register user with email and password 
@@ -98,7 +98,7 @@ exports.login = asynchanddler(async(req, res , next )=>{
 
 
 
-   const token = await user.jwt();
+   const token = await user.sign();
 
    return res.status(400).send({
     success : true  , 
@@ -134,7 +134,7 @@ exports.resetToken = asynchanddler(async (req, res, next )=>{
 
     
   try {
-    const resetToken =  await user.resetToken();
+    const resetToken =  await user.resettoken();
     await user.save({validateBeforeSave:false});
    const  options = {
     emailto : user.email,
@@ -156,6 +156,12 @@ exports.resetToken = asynchanddler(async (req, res, next )=>{
 
 
 
+
+});
+
+exports.resetPasswod = asynchanddler(async(req, res, next)=>{
+  const {resettooken , newpassword}=req.body;
+ const  decoderesettoken = crypto.createHash("sha256").update(newpassword).digest("hex")
 
 })
 
