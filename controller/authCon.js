@@ -1,7 +1,7 @@
 const asynchanddler = require("../middleware/asynchandler");
 const usermodel = require("../model/user");
 
-
+const emailTrapper= require("../utils/emailTraper")
 
 
 
@@ -108,10 +108,16 @@ exports.login = asynchanddler(async(req, res , next )=>{
 });
 
 
-exports.resetpassword = asynchanddler(async (req, res, next )=>{
+exports.resetToken = asynchanddler(async (req, res, next )=>{
   const { email } = req.body;
 
-
+  if(!email){
+    return res.status(400).send({
+      success : false , 
+      message :"please enter your email",
+      data : []
+    });
+  }
 
   let user = await usermodel.findOne({email:email});
 
@@ -126,13 +132,23 @@ exports.resetpassword = asynchanddler(async (req, res, next )=>{
 }
 
 
-
+    
   try {
     const resetToken =  await user.resetToken();
     await user.save({validateBeforeSave:false});
+   const  options = {
+    emailto : user.email,
+    text: `here is the token to reset your password ${resetToken}`,
+    subject : "Your reset token"
+   }
+
+    await emailTrapper(options); 
     
     
   } catch (err) {
+    user.resetToken=undefined;
+    user.dateResetToken= undefined;
+    user.save({validateBeforeSave: false});
 
     
   }
