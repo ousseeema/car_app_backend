@@ -1,47 +1,43 @@
 const asynchanddler = require("../middleware/asynchandler");
-const usermodel = require("../model/user");
+const usermodel = require('../model/user')
 
-const emailTrapper= require("../utils/emailTraper")
+const emailTrapper= require('../utils/emailTraper')
 const crypto =require('crypto')
-
+  
 
 // ?   register user with email and password 
 exports.register =asynchanddler(async (req, res, next )=> {
  
    
      const {email, password , role , name  } = req.body ; 
-
-      let user = await usermodel.findOne({
-        email : email 
-      }); 
-
-
-   if (!user){
-    return res.status(400).send({
-      message : "user already existed in the application try another email",
-      success : false, 
-      data :[]
-    });
-   }
+   const user = await usermodel.findOne({email:email});
+    if (user){
+      return res.status(400).send({
+        message: "User already registered",
+        success: false ,
+        data:[]
+      })
+    }
 
 
-   user = await usermodel.create({
-    email: email , 
-    name: name , 
-    password : password , 
-    role: role 
-   }); 
 
 
-   if (!user){
-    return res.status(404).send({
-      success : false , 
-      message : "error while registering", 
-      data :[],
-    });
-   }
+    const user1 = await usermodel.create({email:email, 
+    password:password , 
+    role:role , 
+    name:name}) ; 
+    if(!user1){
+      return res.status(400).send({
+        message: "Error creating user",
+        success: false ,
+        data:[]
+      })
+      
+    }
+    
+  
 
-   const token  = await user.jwt() ;
+   const token  =  user1.sign();
 
    res.status(200).send({
     success : true , 

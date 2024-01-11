@@ -2,20 +2,20 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const Jwt = require("jsonwebtoken");
 const crypto = require('crypto');
-const user = mongoose.Schema({
+const usermodel = mongoose.Schema({
 
-   fullname :{
-    type : 'string',
+   name :{
+    type : String,
     trim : true , 
-    required : [true , " Please enter your full name"] ,
+    required : [true , " Please enter your email address"],
     maxlength : [100, " Maximum length of the name is 100 characters"], 
     minlength :[6, " Minimum  length of the name is 6 characters"],
 
    }, 
 
    email : {
-    type : 'string',
-    unique : true , 
+    type : String,
+    unique : [true , "email is already taken"], 
     required : [true , " Please enter your email address"],
      maxlength : [100, " Maximum length of the email is 100 characters"],
      minlength :[6, " Minimum length of the email 6 characters"], 
@@ -53,30 +53,31 @@ const user = mongoose.Schema({
    createdAt : {
     type : Date , 
     default : Date.now()
+
    },
    resetToken : String ,
    dateResetToken : Date , 
 });
-user.methods.sign = function(){
+usermodel.methods.sign = function(){
   return Jwt.sign({id: this._id} ,"sioussema", {expiresIn:"30d"})
  }
 
-user.methods.compare = async function(password){
+ usermodel.methods.compare = async function(password){
  
   return await bcrypt.compare(password , this.password);
   
 }
-user.pre("save", function (next) {
+usermodel.pre("save",async function  (next) {
   if(!this.isModified("password")){
     next();
   }
- const  sltgen = bcrypt.genSalt(20);
- const hashpass = bcrypt.hash(this.password, sltgen
+ const  sltgen = await bcrypt.genSalt(20);
+ const hashpass = await  bcrypt.hash(this.password, sltgen
   );
   this.password = hashpass; 
 }) ;
 
-user.methods.resettoken =async function(){
+usermodel.methods.resettoken =async function(){
   const resetToken1 = await crypto.randomBytes(20).toString("hex");
   this.resetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
   this.dateResetToken = Date.now() + 10 * (60 * 1000);
@@ -87,4 +88,4 @@ user.methods.resettoken =async function(){
 
 
 
-module.exports  = mongoose.model("users", user);
+module.exports  = mongoose.model("users", usermodel);
