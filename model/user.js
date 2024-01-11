@@ -79,7 +79,7 @@ usermodel.pre("save",async function  (next) {
 
 usermodel.methods.resettoken =async function(){
   const resetToken1 = await crypto.randomBytes(20).toString("hex");
-  this.resetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+  this.resetToken = crypto.createHash("sha256").update(resetToken1).digest("hex");
   this.dateResetToken = Date.now() + 10 * (60 * 1000);
   return resetToken1;
 }

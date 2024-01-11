@@ -80,7 +80,7 @@ exports.login = asynchanddler(async(req, res , next )=>{
    }
   
 
-   const verifiePass = user.comapre(password);
+   const verifiePass = user.compare(password);
    
 
 
@@ -127,24 +127,34 @@ exports.resetToken = asynchanddler(async (req, res, next )=>{
   })
 }
 
-
-    
-  try {
-    const resetToken =  await user.resettoken();
+const resetToken =  await user.resettoken();
     await user.save({validateBeforeSave:false});
    const  options = {
     emailto : user.email,
     text: `here is the token to reset your password ${resetToken}`,
-    subject : "Your reset token"
+    subject : `THE RESET TOKEN IS  ${resetToken}`
    }
+    
+  try {
+    
 
     await emailTrapper(options); 
+    res.status(200).send( {
+      message : "Your reset token has been sended to youb email",
+      success : true ,
+      data : []
+    })
     
     
   } catch (err) {
     user.resetToken=undefined;
     user.dateResetToken= undefined;
     user.save({validateBeforeSave: false});
+    res.status(404).send({
+      success : false, 
+      message:'email could not be sent , please try again later',
+      data:[]
+    })
 
     
   }
@@ -157,7 +167,55 @@ exports.resetToken = asynchanddler(async (req, res, next )=>{
 
 exports.resetPasswod = asynchanddler(async(req, res, next)=>{
   const {resettooken , newpassword}=req.body;
- const  decoderesettoken = crypto.createHash("sha256").update(newpassword).digest("hex")
+  const  decoderesettoken = crypto.createHash("sha256").update(resettooken).digest("hex")
+  
+  const user = await usermodel.findOne({
+     resettooken : decoderesettoken,
+      dateResetToken : {$gt : Date.now()}                                                          
+  });
+  if(!user){
+    return res.status(404).send({
+      success : false, 
+      message:'no such user found ',
+      data:[]
+    });
+  }
+
+
+
+ try {
+  user.password = newpassword ;
+  
+  user.resetToken = undefined ;
+  user.dateResetToken = undefined ;
+  user.save({validateBeforeSave:true});
+  res.status(200).send({
+    success : true, 
+    message:'password reset successfully',
+    data:[]
+  });
+  
+ } catch (err) {
+  res.status(404).send({
+    success : false, 
+    message:'error in reseting password',
+    data:[]
+  });
+ }
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
 
 })
 
