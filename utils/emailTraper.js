@@ -7,14 +7,15 @@ const emailtraper = async (option) => {
       user: "ed6990159e4dcc",
       pass: "86d8b94f6b7505",
     },
+    
   });
 
 
   const message = {
-    to : options.emailto,
+    to : option.emailto,
     from: "oussemaferchichi@gmail.com",
-    text: options.text,
-    subject: options.subject,
+    text: option.text,
+    subject: option.subject,
   }
    await emailtransport.sendMail(message)
 };

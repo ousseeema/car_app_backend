@@ -170,8 +170,8 @@ exports.resetPasswod = asynchanddler(async(req, res, next)=>{
   const  decoderesettoken = crypto.createHash("sha256").update(resettooken).digest("hex")
   
   const user = await usermodel.findOne({
-     resettooken : decoderesettoken,
-      dateResetToken : {$gt : Date.now()}                                                          
+     resetToken : decoderesettoken,
+     dateResetToken : {$gte : Date.now()}                                                          
   });
   if(!user){
     return res.status(404).send({
