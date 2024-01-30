@@ -58,4 +58,47 @@ if (!id) {
 
 
 // uploaing a car
+// only if you are admin
 //private 
+exports.updateCar =asynchandler(async(req, res, next)=>{
+   
+
+  if(req.user.role != "admin"){
+    return res.status(401).send({
+      success: false ,
+      message: "You are not authorized to access this route or update details",
+    });
+  }
+  const updatedetails = req.body;
+
+  const id = req.params.id;
+  if(!updatedetails){
+    return res.status(400).send({
+      message: "please enter details to update",
+      success: false ,
+      data:[],
+    });
+  }
+
+  const updatedcar = await carmodel.findByIdAndUpdate(id, updatedetails, {
+    new: true,
+    runValidators: true,
+  });
+
+
+   if (!updatedcar){
+      return res.status(404).send({
+        message: "No car found with that id",
+        success: false,
+      });
+
+   }
+
+   return res.status(200).send({
+    message: "Car updated successfully",
+    success: true,
+    data: updatedcar,
+   });
+
+
+})
