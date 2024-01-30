@@ -101,4 +101,48 @@ exports.updateCar =asynchandler(async(req, res, next)=>{
    });
 
 
-})
+});
+
+
+// delete a car
+// only if you are admin
+//private
+
+exports.deleteCar = asynchandler(async(req, res, next)=>{
+
+  if(req.user.role != "admin"){
+    return res.status(401).send({
+      success: false ,
+      message: "You are not authorized to access this route or delete Car",
+    });
+  }
+
+
+  const id = req.params.id;
+
+
+  if (!id) {
+    return res.status(400).send({
+      message: "No car id provided",
+      success: false,
+    });
+  }
+
+
+  const cartodelete = await carmodel.findByIdAndDelete(id);
+
+  if(!cartodelete){
+    return res.status(404).send({
+      message: "No car found with that id",
+      success: false,
+    });
+  }
+
+
+  return res.status(200).send({
+    message: "Car deleted successfully",
+    success: true,
+    data: [],
+  });
+
+});

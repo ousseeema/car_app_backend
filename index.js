@@ -12,6 +12,9 @@ app.use(express.json());
  
   
 
+ const car = require('./controller/carContoller');
+ app.use("/api/v0/cars", car );
+
 
 
 
